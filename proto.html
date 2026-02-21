@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Civic Issue Resolution System</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .role-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .hidden-view {
+            display: none !important;
+        }
+
+        body {
+            background-color: #f3f4f6;
+        }
+    </style>
+</head>
+
+<body class="font-sans text-gray-800">
+
+    <!-- Role Selection (Login Simulation) -->
+    <div id="role-selection" class="min-h-screen flex flex-col items-center justify-center p-4">
+        <h1 class="text-4xl font-bold text-blue-900 mb-2">Smart Civic System</h1>
+        <p class="text-gray-600 mb-10 text-center max-w-lg">Advanced Reporting & Resolution Platform with Anti-Fake
+            Complaint Mechanism</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl">
+            <!-- Citizen -->
+            <div class="bg-white p-6 rounded-xl shadow-md cursor-pointer role-card transition duration-300"
+                onclick="showCitizenLogin()">
+                <div class="text-center">
+                    <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-user text-blue-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Citizen</h3>
+                    <p class="text-sm text-gray-500">Report issues & track progress</p>
+                </div>
+            </div>
+
+            <!-- Municipal Officer -->
+            <div class="bg-white p-6 rounded-xl shadow-md cursor-pointer role-card transition duration-300"
+                onclick="showOfficialLogin('municipal')">
+                <div class="text-center">
+                    <div class="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-building text-purple-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Municipal Officer</h3>
+                    <p class="text-sm text-gray-500">Verify & Forward complaints</p>
+                </div>
+            </div>
+
+            <!-- Dept Official -->
+            <div class="bg-white p-6 rounded-xl shadow-md cursor-pointer role-card transition duration-300"
+                onclick="showOfficialLogin('dept')">
+                <div class="text-center">
+                    <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-hard-hat text-green-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Dept. Official</h3>
+                    <p class="text-sm text-gray-500">Resolve issues & Upload Proof</p>
+                </div>
+            </div>
+        </div>
+        <p class="mt-8 text-xs text-gray-400">Prototype Demo</p>
+    </div>
+
+    <!-- Citizen Login Modal -->
+    <div id="citizen-login-modal"
+        class="hidden-view min-h-screen flex flex-col items-center justify-center p-4 bg-white">
+        <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md border">
+            <h2 class="text-2xl font-bold text-center text-blue-900 mb-6">Citizen Login</h2>
+
+            <!-- Step 1: Phone -->
+            <div id="login-step-1">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Phone Number</label>
+                    <input type="tel" id="login-phone"
+                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Enter 10-digit number">
+                </div>
+                <button onclick="getOtp()"
+                    class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition mb-4">Get
+                    OTP</button>
+            </div>
+
+            <!-- Step 2: OTP -->
+            <div id="login-step-2" class="hidden">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Enter OTP</label>
+                    <input type="text" id="login-otp"
+                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Enter OTP sent to phone">
+                    <p class="text-xs text-green-600 mt-1" id="otp-sent-msg"></p>
+                </div>
+                <button onclick="verifyOtp()"
+                    class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition mb-4">Verify &
+                    Login</button>
+            </div>
+
+            <button onclick="cancelLogin()" class="w-full text-gray-500 text-sm hover:text-gray-700">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Official Login Modal -->
+    <div id="official-login-modal"
+        class="hidden-view min-h-screen flex flex-col items-center justify-center p-4 bg-white">
+        <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md border">
+            <h2 class="text-2xl font-bold text-center text-gray-800 mb-6" id="official-login-title">Official Login</h2>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">User ID</label>
+                <input type="text" id="official-id"
+                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="Enter ID">
+            </div>
+            <div class="mb-6">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Password</label>
+                <input type="password" id="official-pass"
+                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="Enter Password">
+            </div>
+
+            <button onclick="verifyOfficialLogin()"
+                class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition mb-4">Login</button>
+            <button onclick="cancelOfficialLogin()"
+                class="w-full text-gray-500 text-sm hover:text-gray-700">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Main Application Container -->
+    <div id="app-container" class="hidden-view min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="bg-white shadow z-10">
+            <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+                <div class="flex items-center">
+                    <button onclick="logout()" class="mr-4 text-gray-500 hover:text-gray-700 md:hidden"><i
+                            class="fas fa-arrow-left"></i></button>
+                    <h1 class="text-xl font-bold text-gray-800" id="header-title">Dashboard</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span id="user-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-gray-100">User</span>
+                    <button onclick="logout()"
+                        class="text-red-500 hover:text-red-700 text-sm font-medium">Logout</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Citizen View -->
+        <main id="view-citizen" class="flex-grow container mx-auto px-4 py-6 hidden-view">
+            <div id="citizen-warning" class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 hidden"
+                role="alert">
+                <p class="font-bold">Warning!</p>
+                <p id="warning-text">You have submitted a fake complaint.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Report Form -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-xl shadow p-6">
+                        <h2 class="text-lg font-bold mb-4">Report New Issue</h2>
+                        <form id="citizen-form">
+                            <div class="mb-3">
+                                <label class="block text-sm font-medium text-gray-700">Reporter Name</label>
+                                <input type="text" id="c-name"
+                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm border p-2"
+                                    placeholder="Your Name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block text-sm font-medium text-gray-700">Problem Type</label>
+                                <select id="c-type"
+                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm border p-2"
+                                    required>
+                                    <option value="">Select...</option>
+                                    <option value="Roads">Damaged Roads</option>
+                                    <option value="Water">Water Leakage</option>
+                                    <option value="Garbage">Garbage Piling</option>
+                                    <option value="Drainage">Drainage Cleaning</option>
+                                    <option value="Streetlight">Streetlight Issue</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block text-sm font-medium text-gray-700">District</label>
+                                <select id="c-district"
+                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm border p-2"
+                                    required>
+                                    <option value="">Select District...</option>
+                                    <option value="Ariyalur">Ariyalur</option>
+                                    <option value="Chengalpattu">Chengalpattu</option>
+                                    <option value="Chennai">Chennai</option>
+                                    <option value="Coimbatore">Coimbatore</option>
+                                    <option value="Cuddalore">Cuddalore</option>
+                                    <option value="Dharmapuri">Dharmapuri</option>
+                                    <option value="Dindigul">Dindigul</option>
+                                    <option value="Erode">Erode</option>
+                                    <option value="Kallakurichi">Kallakurichi</option>
+                                    <option value="Kancheepuram">Kancheepuram</option>
+                                    <option value="Kanyakumari">Kanyakumari</option>
+                                    <option value="Karur">Karur</option>
+                                    <option value="Krishnagiri">Krishnagiri</option>
+                                    <option value="Madurai">Madurai</option>
+                                    <option value="Mayiladuthurai">Mayiladuthurai</option>
+                                    <option value="Nagapattinam">Nagapattinam</option>
+                                    <option value="Namakkal">Namakkal</option>
+                                    <option value="Nilgiris">Nilgiris</option>
+                                    <option value="Perambalur">Perambalur</option>
+                                    <option value="Pudukkottai">Pudukkottai</option>
+                                    <option value="Ramanathapuram">Ramanathapuram</option>
+                                    <option value="Ranipet">Ranipet</option>
+                                    <option value="Salem">Salem</option>
+                                    <option value="Sivaganga">Sivaganga</option>
+                                    <option value="Tenkasi">Tenkasi</option>
+                                    <option value="Thanjavur">Thanjavur</option>
+                                    <option value="Theni">Theni</option>
+                                    <option value="Thoothukudi">Thoothukudi</option>
+                                    <option value="Tiruchirappalli">Tiruchirappalli</option>
+                                    <option value="Tirunelveli">Tirunelveli</option>
+                                    <option value="Tirupathur">Tirupathur</option>
+                                    <option value="Tiruppur">Tiruppur</option>
+                                    <option value="Tiruvallur">Tiruvallur</option>
+                                    <option value="Tiruvannamalai">Tiruvannamalai</option>
+                                    <option value="Tiruvarur">Tiruvarur</option>
+                                    <option value="Vellore">Vellore</option>
+                                    <option value="Viluppuram">Viluppuram</option>
+                                    <option value="Virudhunagar">Virudhunagar</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block text-sm font-medium text-gray-700">Pincode</label>
+                                <input type="number" id="c-pincode"
+                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm border p-2"
+                                    placeholder="6-digit Pincode" required min="100000" max="999999">
+                            </div>
+                            <div class="mb-3">
+                                <label class="block text-sm font-medium text-gray-700">Description</label>
+                                <textarea id="c-desc" rows="3"
+                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm border p-2"
+                                    placeholder="Describe the issue..." required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block text-sm font-medium text-gray-700">Location</label>
+                                <div class="flex space-x-2">
+                                    <input type="text" id="c-loc"
+                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm border p-2"
+                                        placeholder="Area / Street Details" required>
+                                    <button type="button" onclick="getLiveLocation()"
+                                        class="mt-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-3 rounded"
+                                        title="Use Live Location">
+                                        <i class="fas fa-map-marker-alt text-red-500"></i>
+                                    </button>
+                                </div>
+                                <input type="hidden" id="c-coords">
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Evidence (Live
+                                    Camera)</label>
+
+                                <!-- Camera Interface -->
+                                <div id="camera-container" class="relative">
+                                    <video id="camera-feed"
+                                        class="w-full h-64 bg-black rounded-lg hidden object-cover"></video>
+                                    <img id="captured-image" class="w-full h-auto rounded-lg hidden border">
+                                    <canvas id="camera-canvas" class="hidden"></canvas>
+
+                                    <div class="mt-2 flex space-x-2">
+                                        <button type="button" onclick="startCamera()" id="btn-start-camera"
+                                            class="flex-1 bg-gray-200 text-gray-700 py-2 rounded-md hover:bg-gray-300 font-bold">
+                                            <i class="fas fa-camera mr-2"></i>Start Camera
+                                        </button>
+                                        <button type="button" onclick="capturePhoto()" id="btn-capture"
+                                            class="flex-1 bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 font-bold hidden">
+                                            <i class="fas fa-dot-circle mr-2"></i>Capture
+                                        </button>
+                                        <button type="button" onclick="retakePhoto()" id="btn-retake"
+                                            class="flex-1 bg-yellow-500 text-white py-2 rounded-md hover:bg-yellow-600 font-bold hidden">
+                                            <i class="fas fa-redo mr-2"></i>Retake
+                                        </button>
+                                    </div>
+                                    <p id="camera-status" class="text-xs text-gray-500 mt-1 text-center">Camera access
+                                        required for live evidence.</p>
+                                </div>
+                            </div>
+                            <button type="submit"
+                                class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition">Submit
+                                Complaint</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- My Complaints -->
+                <div class="lg:col-span-2">
+                    <h2 class="text-lg font-bold mb-4">My Complaints</h2>
+                    <div id="citizen-complaints-list" class="space-y-4">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Municipal View -->
+        <main id="view-municipal" class="flex-grow container mx-auto px-4 py-6 hidden-view">
+            <h2 class="text-2xl font-bold mb-6">Incoming Complaints for Verification</h2>
+            <div class="bg-white rounded-xl shadow overflow-hidden">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Complaint</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Verification</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="municipal-table-body" class="bg-white divide-y divide-gray-200"></tbody>
+                </table>
+            </div>
+        </main>
+
+        <!-- Dept View -->
+        <main id="view-dept" class="flex-grow container mx-auto px-4 py-6 hidden-view">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Department Tasks</h2>
+                <select id="dept-selector" class="border p-2 rounded" onchange="renderDeptView()">
+                    <option value="Electricity Board">Electricity Board (EB)</option>
+                    <option value="Municipal Corporation">Municipal Corporation</option>
+                    <option value="Fire Station">Fire Station</option>
+                    <option value="Police Station">Police Station</option>
+                </select>
+            </div>
+
+            <div class="bg-white rounded-xl shadow p-6">
+                <div id="dept-tasks-list" class="space-y-6"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // --- Data Management ---
+        const DB_KEY = 'smart_civic_data';
+        const USER_KEY = 'smart_civic_user_strikes';
+
+        function getData() {
+            return JSON.parse(localStorage.getItem(DB_KEY)) || [];
+        }
+
+        function saveData(data) {
+            localStorage.setItem(DB_KEY, JSON.stringify(data));
+        }
+
+        function getUserStrikes() {
+            return parseInt(localStorage.getItem(USER_KEY)) || 0;
+        }
+
+        function incrementStrikes() {
+            const current = getUserStrikes() + 1;
+            localStorage.setItem(USER_KEY, current);
+            return current;
+        }
+
+        // --- App State ---
+        let currentUserRole = null;
+
+        function login(role) {
+            currentUserRole = role;
+            document.getElementById('role-selection').classList.add('hidden-view');
+            document.getElementById('app-container').classList.remove('hidden-view');
+
+            // Setup Header
+            const badges = {
+                'citizen': { text: 'Citizen', color: 'bg-blue-100 text-blue-800' },
+                'municipal': { text: 'Municipal Officer', color: 'bg-purple-100 text-purple-800' },
+                'dept': { text: 'Dept. Official', color: 'bg-green-100 text-green-800' }
+            };
+            const badge = document.getElementById('user-badge');
+            badge.textContent = badges[role].text;
+            badge.className = `px-3 py-1 rounded-full text-xs font-bold ${badges[role].color}`;
+
+            // Show View
+            document.querySelectorAll('main').forEach(el => el.classList.add('hidden-view'));
+            document.getElementById(`view-${role}`).classList.remove('hidden-view');
+
+            if (role === 'citizen') initCitizen();
+            if (role === 'municipal') initMunicipal();
+            if (role === 'dept') initDept();
+        }
+
+        function logout() {
+            location.reload();
+        }
+
+        // --- Login Logic ---
+        let generatedOtp = null;
+
+        function showCitizenLogin() {
+            document.getElementById('role-selection').classList.add('hidden-view');
+            document.getElementById('citizen-login-modal').classList.remove('hidden-view');
+            // Reset state
+            document.getElementById('login-step-1').classList.remove('hidden');
+            document.getElementById('login-step-2').classList.add('hidden');
+            document.getElementById('login-phone').value = '';
+            document.getElementById('login-otp').value = '';
+        }
+
+        function cancelLogin() {
+            document.getElementById('citizen-login-modal').classList.add('hidden-view');
+            document.getElementById('role-selection').classList.remove('hidden-view');
+        }
+
+        function getOtp() {
+            const phone = document.getElementById('login-phone').value;
+            if (phone.length < 10) {
+                alert('Please enter a valid 10-digit phone number');
+                return;
+            }
+
+            generatedOtp = Math.floor(1000 + Math.random() * 9000);
+            alert(`Your OTP is: ${generatedOtp}`); // Simulation
+
+            document.getElementById('login-step-1').classList.add('hidden');
+            document.getElementById('login-step-2').classList.remove('hidden');
+            document.getElementById('otp-sent-msg').textContent = `OTP sent to ${phone}`;
+        }
+
+        function verifyOtp() {
+            const inputOtp = document.getElementById('login-otp').value;
+            if (parseInt(inputOtp) === generatedOtp) {
+                document.getElementById('citizen-login-modal').classList.add('hidden-view');
+                login('citizen');
+            } else {
+                alert('Invalid OTP. Please try again.');
+            }
+        }
+
+        // --- Official Login Logic ---
+        let pendingRole = null;
+
+        function showOfficialLogin(role) {
+            pendingRole = role;
+            document.getElementById('role-selection').classList.add('hidden-view');
+            document.getElementById('official-login-modal').classList.remove('hidden-view');
+
+            const title = role === 'municipal' ? 'Municipal Officer Login' : 'Dept. Official Login';
+            document.getElementById('official-login-title').textContent = title;
+
+            // Reset
+            document.getElementById('official-id').value = '';
+            document.getElementById('official-pass').value = '';
+        }
+
+        function cancelOfficialLogin() {
+            document.getElementById('official-login-modal').classList.add('hidden-view');
+            document.getElementById('role-selection').classList.remove('hidden-view');
+            pendingRole = null;
+        }
+
+        function verifyOfficialLogin() {
+            const id = document.getElementById('official-id').value;
+            const pass = document.getElementById('official-pass').value;
+
+            // Simple hardcoded check for prototype
+            if (id === 'admin' && pass === 'admin123') {
+                document.getElementById('official-login-modal').classList.add('hidden-view');
+                login(pendingRole);
+            } else {
+                alert('Invalid Credentials! (Try: admin / admin123)');
+            }
+        }
+
+        // --- Citizen Logic ---
+        function initCitizen() {
+            const strikes = getUserStrikes();
+            const warningEl = document.getElementById('citizen-warning');
+            const warningText = document.getElementById('warning-text');
+            const formBtn = document.querySelector('#citizen-form button');
+
+            if (strikes > 0) {
+                warningEl.classList.remove('hidden');
+                if (strikes === 1) warningText.textContent = "Warning 1/3: You submitted a fake complaint. Future verification failures will lead to action.";
+                if (strikes === 2) warningText.textContent = "Final Warning 2/3: One more fake complaint and you will be reported to the Police.";
+                if (strikes >= 3) {
+                    warningText.textContent = "ACCOUNT BLOCKED: Your details have been sent to the Police Station for submitting multiple fake complaints.";
+                    formBtn.disabled = true;
+                    formBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    formBtn.textContent = "Account Blocked";
+                    return; // Stop execution
+                }
+            }
+
+            renderCitizenComplaints();
+        }
+
+        document.getElementById('citizen-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('c-name').value;
+            const type = document.getElementById('c-type').value;
+            const district = document.getElementById('c-district').value;
+            const pincode = document.getElementById('c-pincode').value;
+            const desc = document.getElementById('c-desc').value;
+            const loc = document.getElementById('c-loc').value;
+            const coords = document.getElementById('c-coords').value;
+
+            // Use captured photo data directly
+            if (capturedPhotoData) {
+                processComplaintSubmission(name, type, district, pincode, desc, loc, coords, capturedPhotoData);
+            } else {
+                alert('Please force capture a photo using the Start Camera button.');
+                // Optional: Allow submission without photo if really needed, but req says replace functionality
+                // processComplaintSubmission(name, type, district, pincode, desc, loc, coords, null);
+            }
+        });
+
+        function processComplaintSubmission(name, type, district, pincode, desc, loc, coords, photoData) {
+            const complaints = getData();
+            complaints.push({
+                id: Date.now(),
+                name,
+                type,
+                district,
+                pincode,
+                desc,
+                loc,
+                status: 'Submitted', // Submitted -> Verified -> Forwarded -> In Progress -> Resolved
+                date: new Date().toLocaleDateString(),
+                department: null,
+                notes: null,
+                photo: photoData, // Store the base64 string
+                resolutionPhoto: null,
+                coordinates: coords || null,
+                user: 'current_user'
+            });
+            saveData(complaints);
+
+            document.getElementById('citizen-form').reset();
+            resetCameraUI(); // Reset camera state
+            renderCitizenComplaints();
+            alert('Complaint Submitted Successfully! Sent to Municipal Office for verification.');
+        }
+
+        function renderCitizenComplaints() {
+            const list = document.getElementById('citizen-complaints-list');
+            const data = getData(); // In real app filter by user
+
+            list.innerHTML = data.map(c => `
+                <div class="bg-white p-4 rounded-lg shadow border-l-4 ${getStatusColor(c.status)}">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-bold text-gray-800">${c.type} <span class="text-xs font-normal text-gray-500">(${c.district || 'District N/A'} - ${c.pincode || 'N/A'})</span></h4>
+                            <p class="text-sm text-gray-600">${c.desc}</p>
+                            <p class="text-xs text-gray-400 mt-1"><i class="fas fa-map-marker-alt"></i> ${c.loc}</p>
+                        </div>
+                        <span class="text-xs font-bold px-2 py-1 bg-gray-100 rounded">${c.status}</span>
+                    </div>
+                    ${c.notes ? `<p class="mt-2 text-xs text-indigo-600 bg-indigo-50 p-2 rounded"><strong>Update:</strong> ${c.notes}</p>` : ''}
+                    ${c.resolutionPhoto ? `<div class="mt-2"><p class="text-xs font-bold text-green-600 mb-1">Resolution Proof:</p><div class="h-20 w-32 bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs">Photo</div></div>` : ''}
+                </div>
+            `).join('');
+
+            if (data.length === 0) list.innerHTML = '<p class="text-gray-500 text-center">No complaints yet.</p>';
+        }
+
+        function getStatusColor(status) {
+            if (status === 'Submitted') return 'border-gray-500';
+            if (status === 'Verified') return 'border-blue-500';
+            if (status === 'Forwarded') return 'border-purple-500';
+            if (status === 'In Progress') return 'border-yellow-500';
+            if (status === 'Resolved') return 'border-green-500';
+            if (status === 'Rejected') return 'border-red-500';
+            return 'border-gray-500';
+        }
+
+        // --- Municipal Logic ---
+        function initMunicipal() {
+            renderMunicipalTable();
+        }
+
+        function renderMunicipalTable() {
+            const tbody = document.getElementById('municipal-table-body');
+            // updated to show all except rejected (or keep rejected for history? Let's show all for full visibility)
+            const data = getData().sort((a, b) => {
+                // Priority: Submitted > Others
+                if (a.status === 'Submitted' && b.status !== 'Submitted') return -1;
+                if (a.status !== 'Submitted' && b.status === 'Submitted') return 1;
+                return b.id - a.id;
+            });
+
+            tbody.innerHTML = data.map(c => {
+                const isSubmitted = c.status === 'Submitted';
+                // Helper for badge style if needed, reusing getStatusColor which returns border-color class
+                // We can add text color classes manually or use getStatusColor for border
+
+                return `
+                <tr class="${!isSubmitted ? 'bg-gray-50' : ''}">
+                    <td class="px-6 py-4">
+                        <div class="text-sm font-bold text-gray-900">${c.name || 'Anonymous'}</div>
+                        <div class="text-sm font-medium text-gray-700">${c.type}</div>
+                        <div class="text-xs font-semibold text-blue-600 mb-1">
+                            ${c.district || 'District N/A'} <span class="text-gray-400">|</span> ${c.pincode || 'Pin: N/A'}
+                        </div>
+                        <div class="text-sm text-gray-500 mb-2">${c.desc}</div>
+                        
+                        <div class="text-xs text-gray-500 bg-gray-50 p-2 rounded">
+                            <span class="font-semibold">Location:</span> ${c.loc}
+                            ${c.coordinates ? `
+                            <div class="mt-1">
+                                <a href="https://www.google.com/maps?q=${c.coordinates}" target="_blank" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-semibold">
+                                    <i class="fas fa-map-marker-alt mr-1 text-red-500"></i> View on Google Maps
+                                </a>
+                            </div>` : ''}
+                        </div>
+                        
+                        ${c.photo ? `
+                        <div class="mt-3">
+                            <p class="text-xs font-semibold text-gray-500 mb-1">Attached Photo:</p>
+                            <img src="${c.photo}" alt="Issue Photo" class="h-24 w-auto rounded-md border shadow-sm cursor-pointer hover:opacity-90 transition" onclick="window.open(this.src)" title="Click to View Full Size">
+                        </div>` : ''}
+                    </td>
+                    <td class="px-6 py-4">
+                        ${isSubmitted ? `
+                        <select class="dept-select block w-full text-sm border-gray-300 rounded-md shadow-sm border p-1" id="dept-${c.id}">
+                            <option value="">Choose Dept...</option>
+                            <option value="Electricity Board">Electricity Board (EB)</option>
+                            <option value="Municipal Corporation">Municipal Corp (Road/Water/Drainage)</option>
+                            <option value="Fire Station">Fire Station</option>
+                            <option value="Police Station">Police Station</option>
+                        </select>
+                        ` : `
+                        <div class="text-sm text-gray-600">
+                            <span class="font-bold block">${c.department || 'N/A'}</span>
+                            <span class="text-xs text-gray-400">Assigned Dept.</span>
+                        </div>
+                        `}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        ${isSubmitted ? `
+                        <button onclick="verifyAndForward(${c.id})" class="text-white bg-green-600 hover:bg-green-700 px-3 py-1 rounded mr-2 mb-1">Verify & Forward</button>
+                        <button onclick="markFake(${c.id})" class="text-white bg-red-600 hover:bg-red-700 px-3 py-1 rounded">Mark Fake</button>
+                        ` : `
+                        <span class="px-2 py-1 rounded text-xs font-bold border ${getStatusColor(c.status)} bg-white text-gray-700">${c.status}</span>
+                        ${c.notes ? `<div class="text-xs text-gray-500 mt-2 italic max-w-xs break-words" title="${c.notes}">${c.notes}</div>` : ''}
+                        `}
+                    </td>
+                </tr>
+            `}).join('');
+
+            if (data.length === 0) tbody.innerHTML = '<tr><td colspan="3" class="px-6 py-4 text-center text-gray-500">No complaints found.</td></tr>';
+        }
+
+        window.verifyAndForward = function (id) {
+            const dept = document.getElementById(`dept-${id}`).value;
+            if (!dept) { alert('Please select a department.'); return; }
+
+            const data = getData();
+            const item = data.find(c => c.id === id);
+            item.status = 'Forwarded';
+            item.department = dept;
+            item.notes = `Verified by Municipal Officer. Forwarded to ${dept}.`;
+            saveData(data);
+            renderMunicipalTable();
+        };
+
+        window.markFake = function (id) {
+            if (!confirm('Are you sure this is a Fake Complaint? This will strike the user.')) return;
+
+            const data = getData();
+            const item = data.find(c => c.id === id);
+            item.status = 'Rejected';
+            item.notes = 'Marked as FAKE. Warning issued.';
+            saveData(data);
+
+            const strikes = incrementStrikes();
+            alert(`Complaint Rejected. User now has ${strikes} strike(s). ${strikes >= 3 ? 'POLICE REPORTED.' : ''}`);
+            renderMunicipalTable();
+        };
+
+        // --- Dept Logic ---
+        function initDept() {
+            renderDeptView();
+        }
+
+        window.renderDeptView = function () {
+            const selectedDept = document.getElementById('dept-selector').value;
+            const list = document.getElementById('dept-tasks-list');
+            // Filter: Forwarded or In Progress issues for this dept
+            const data = getData().filter(c => c.department === selectedDept && (c.status === 'Forwarded' || c.status === 'In Progress'));
+
+            list.innerHTML = data.map(c => `
+                <div class="border rounded-lg p-4">
+                    <div class="flex justify-between mb-2">
+                        <h3 class="font-bold">${c.type} <span class="text-xs font-normal text-gray-500">(${c.loc})</span></h3>
+                        <span class="text-xs bg-gray-100 px-2 py-1 rounded">${c.status}</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">${c.desc}</p>
+                    
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700">Update Status & Time</label>
+                            <input type="text" id="status-update-${c.id}" class="w-full border p-1 text-sm rounded" placeholder="e.g. Work started, completing in 2 days">
+                        </div>
+                        <div class="flex items-end gap-2">
+                             <div class="flex-grow">
+                                <label class="block text-xs font-bold text-gray-700">Resolution Proof</label>
+                                <input type="file" id="proof-${c.id}" class="w-full text-xs text-gray-500">
+                             </div>
+                             <button onclick="updateProgress(${c.id})" class="bg-yellow-500 text-white px-3 py-1 rounded text-sm h-8">Update Status</button>
+                             <button onclick="resolveIssue(${c.id})" class="bg-green-600 text-white px-3 py-1 rounded text-sm h-8">Resolve & Upload</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            if (data.length === 0) list.innerHTML = '<p class="text-center text-gray-500">No pending tasks for this department.</p>';
+        };
+
+        window.updateProgress = function (id) {
+            const note = document.getElementById(`status-update-${id}`).value;
+            if (!note) return alert('Enter a status note');
+
+            const data = getData();
+            const item = data.find(c => c.id === id);
+            item.status = 'In Progress';
+            item.notes = note;
+            saveData(data);
+            renderDeptView();
+            alert('Progress updated');
+        };
+
+        window.resolveIssue = function (id) {
+            // Simplified Photo logic for prototype - usually needs FileReader
+            const proofInput = document.getElementById(`proof-${id}`);
+            if (proofInput.files.length === 0) return alert('Proof Photo is MANDATORY to resolve.');
+
+            const data = getData();
+            const item = data.find(c => c.id === id);
+            item.status = 'Resolved';
+            item.notes = 'Work Completed. Resolution proof uploaded.';
+            item.resolutionPhoto = true; // Flag to show "Photo" placeholder in citizen view
+            saveData(data);
+            renderDeptView();
+            alert('Issue Resolved!');
+        };
+
+        // --- Geolocation Logic ---
+        function getLiveLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        document.getElementById('c-coords').value = `${lat},${lng}`;
+
+                        // Optional: Reverse Geocoding could go here to get address string
+                        // For now, just append coordinates to visual input or keep distinct
+                        const locInput = document.getElementById('c-loc');
+                        if (!locInput.value) {
+                            locInput.value = `Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}`;
+                        } else {
+                            locInput.value += ` (Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)})`;
+                        }
+                        alert('Location captured successfully!');
+                    },
+                    (error) => {
+                        alert('Error getting location: ' + error.message);
+                    }
+                );
+            } else {
+                alert('Geolocation is not supported by this browser.');
+            }
+        }
+
+        // --- Camera Logic ---
+        let stream = null;
+        let capturedPhotoData = null;
+
+        function startCamera() {
+            const video = document.getElementById('camera-feed');
+            const status = document.getElementById('camera-status');
+
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+                    .then(function (s) {
+                        stream = s;
+                        video.srcObject = stream;
+                        video.play();
+
+                        // UI Updates
+                        video.classList.remove('hidden');
+                        document.getElementById('captured-image').classList.add('hidden');
+                        document.getElementById('btn-start-camera').classList.add('hidden');
+                        document.getElementById('btn-capture').classList.remove('hidden');
+                        document.getElementById('btn-retake').classList.add('hidden');
+                        status.textContent = "Camera active. Point at the issue.";
+                    })
+                    .catch(function (err) {
+                        console.error("Camera Error:", err);
+                        status.textContent = "Error accessing camera: " + err.message;
+                        alert("Camera access denied or not available.");
+                    });
+            } else {
+                status.textContent = "Camera API not supported in this browser.";
+            }
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+        }
+
+        function capturePhoto() {
+            const video = document.getElementById('camera-feed');
+            const canvas = document.getElementById('camera-canvas');
+            const img = document.getElementById('captured-image');
+            const status = document.getElementById('camera-status');
+
+            if (!stream) return;
+
+            // Set canvas dimensions to match video
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Overlay Metadata
+            const now = new Date().toLocaleString();
+            const locationText = document.getElementById('c-loc').value || "Unknown Location";
+            const coordsText = document.getElementById('c-coords').value || "";
+
+            ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+            ctx.fillRect(0, canvas.height - 60, canvas.width, 60);
+
+            ctx.fillStyle = "white";
+            ctx.font = "16px sans-serif";
+            ctx.fillText(now, 10, canvas.height - 40);
+            ctx.fillText(locationText.substring(0, 50), 10, canvas.height - 20);
+            if (coordsText) {
+                ctx.font = "12px sans-serif";
+                ctx.fillText(coordsText, canvas.width - 200, canvas.height - 20);
+            }
+
+            // Convert to data URL
+            capturedPhotoData = canvas.toDataURL('image/jpeg');
+            img.src = capturedPhotoData;
+
+            // UI Updates
+            stopCamera();
+            video.classList.add('hidden');
+            img.classList.remove('hidden');
+            document.getElementById('btn-capture').classList.add('hidden');
+            document.getElementById('btn-retake').classList.remove('hidden');
+            status.textContent = "Photo captured with location tag.";
+        }
+
+        function retakePhoto() {
+            capturedPhotoData = null;
+            startCamera();
+        }
+
+        function resetCameraUI() {
+            stopCamera();
+            capturedPhotoData = null;
+            document.getElementById('camera-feed').classList.add('hidden');
+            document.getElementById('captured-image').classList.add('hidden');
+            document.getElementById('btn-start-camera').classList.remove('hidden');
+            document.getElementById('btn-capture').classList.add('hidden');
+            document.getElementById('btn-retake').classList.add('hidden');
+            document.getElementById('camera-status').textContent = "Camera access required for live evidence.";
+        }
+    </script>
+</body>
+
+</html>
