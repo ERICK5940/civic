@@ -10,6 +10,7 @@ const DB_FILE = path.join(__dirname, 'db.json');
 
 app.use(cors());
 app.use(bodyParser.json({ limit: '50mb' })); // Increased limit for base64 images
+app.use(express.static(__dirname)); // Serve static files from current directory
 
 // Helper to read DB
 const readDB = () => {
@@ -30,6 +31,11 @@ const writeDB = (data) => {
         console.error("Error writing DB:", err);
     }
 };
+
+// Serve tryon.html for the root route
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'tryon.html'));
+});
 
 // GET all complaints
 app.get('/api/complaints', (req, res) => {
